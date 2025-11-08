@@ -13,29 +13,14 @@ print("EXERCICE 2 - MODÉLISATION SARIMA")
 print("Dataset: Electric Power Consumption") 
 print("="*70)
 
-# 1. DATA EXPLORATION
+
 print("\n1. EXPLORATION DES DONNÉES")
 print("-"*70)
 
-# Charger les données (vous devez fournir le fichier dataset2.txt ou dataset2.csv)
-# Exemple de chargement - ajustez selon votre fichier
-try:
-    data = pd.read_csv('dataset2.txt', sep='\t', parse_dates=['Date'])
-    data.set_index('Date', inplace=True)
-except:
-    try:
-        data = pd.read_csv('dataset2.csv', parse_dates=['Date'])
-        data.set_index('Date', inplace=True)
-    except:
-        print("⚠ Fichier de données non trouvé. Création de données synthétiques...")
-        # Créer des données synthétiques pour démonstration
-        dates = pd.date_range(start='2010-01-01', end='2024-12-31', freq='MS')
-        np.random.seed(42)
-        trend = np.linspace(1000, 2000, len(dates))
-        seasonal = 300 * np.sin(2 * np.pi * np.arange(len(dates)) / 12)
-        noise = np.random.normal(0, 50, len(dates))
-        values = trend + seasonal + noise
-        data = pd.DataFrame({'Consumption': values}, index=dates)
+
+
+data = pd.read_csv('dataset2.txt', sep='\t', parse_dates=['Date'])
+data.set_index('Date', inplace=True)
 
 print(f"Période: {data.index.min()} à {data.index.max()}")
 print(f"Nombre d'observations: {len(data)}")
@@ -44,21 +29,20 @@ print(data.head())
 print(f"\nStatistiques descriptives:")
 print(data.describe())
 
-# Vérifier les valeurs manquantes
+
 missing = data.isnull().sum()
 print(f"\nValeurs manquantes: {missing.values[0]}")
 if missing.values[0] > 0:
     print("  → Interpolation des valeurs manquantes...")
     data = data.interpolate(method='linear')
 
-# 2. STATIONARITY ANALYSIS
+
 print("\n" + "="*70)
 print("2. ANALYSE DE STATIONNARITÉ")
 print("-"*70)
 
 consumption = data.iloc[:, 0]
 
-# Test ADF (Augmented Dickey-Fuller)
 def adf_test(series, name=''):
     result = adfuller(series.dropna())
     print(f"\nTest ADF pour {name}:")
@@ -95,7 +79,7 @@ else:
 
 print(f"\n→ Paramètre de différenciation recommandé: d = {d_param}")
 
-# Différenciation saisonnière
+
 print("\n→ Test de stationnarité saisonnière...")
 seasonal_diff = consumption.diff(12).dropna()
 is_seasonal_stationary = adf_test(seasonal_diff, "Différence saisonnière (lag=12)")
@@ -107,37 +91,37 @@ else:
 
 print(f"→ Paramètre de différenciation saisonnière recommandé: D = {D_param}")
 
-# 3. SARIMA PARAMETER IDENTIFICATION
+
 print("\n" + "="*70)
 print("3. IDENTIFICATION DES PARAMÈTRES SARIMA")
 print("-"*70)
 
-# Préparer la série différenciée pour ACF/PACF
+
 if d_param > 0:
     series_for_acf = consumption.diff(d_param).dropna()
 else:
     series_for_acf = consumption
 
-# Plots ACF et PACF
+
 fig, axes = plt.subplots(2, 2, figsize=(14, 8))
 
-# Série originale
+
 axes[0, 0].plot(consumption)
 axes[0, 0].set_title('Série Originale - Consommation Électrique')
 axes[0, 0].set_ylabel('Consommation')
 axes[0, 0].grid(True, alpha=0.3)
 
-# Série différenciée
+
 axes[0, 1].plot(series_for_acf)
 axes[0, 1].set_title(f'Série Différenciée (d={d_param})')
 axes[0, 1].set_ylabel('Différence')
 axes[0, 1].grid(True, alpha=0.3)
 
-# ACF
+
 plot_acf(series_for_acf, lags=40, ax=axes[1, 0])
 axes[1, 0].set_title('Autocorrelation Function (ACF)')
 
-# PACF
+
 plot_pacf(series_for_acf, lags=40, ax=axes[1, 1])
 axes[1, 1].set_title('Partial Autocorrelation Function (PACF)')
 
@@ -152,17 +136,17 @@ print("  - ACF: Pics significatifs → paramètre q (MA)")
 print("  - PACF: Pics significatifs → paramètre p (AR)")
 print("  - Pics saisonniers (lag 12, 24, ...) → P, Q")
 
-# Paramètres suggérés
+
 print("\n→ Paramètres suggérés à tester:")
 print(f"  Non-saisonnier: p=1, d={d_param}, q=1")
 print(f"  Saisonnier: P=1, D={D_param}, Q=1, s=12")
 
-# 4. MODEL BUILDING
+
 print("\n" + "="*70)
 print("4. CONSTRUCTION DU MODÈLE SARIMA")
 print("-"*70)
 
-# Split train/test (80/20)
+
 train_size = int(len(consumption) * 0.8)
 train = consumption[:train_size]
 test = consumption[train_size:]
@@ -170,7 +154,7 @@ test = consumption[train_size:]
 print(f"Données d'entraînement: {len(train)} observations")
 print(f"Données de test: {len(test)} observations")
 
-# Tester plusieurs configurations
+
 configs = [
     ((1, d_param, 1), (1, D_param, 1, 12)),
     ((1, d_param, 0), (1, D_param, 1, 12)),
@@ -204,15 +188,15 @@ print(f"  AIC: {best_aic:.2f}")
 print("\n→ Résumé du modèle:")
 print(best_model.summary())
 
-# 5. MODEL EVALUATION
+
 print("\n" + "="*70)
 print("5. ÉVALUATION DU MODÈLE")
 print("-"*70)
 
-# Prédictions sur l'ensemble de test
+
 predictions = best_model.forecast(steps=len(test))
 
-# Métriques
+
 mae = np.mean(np.abs(test.values - predictions))
 rmse = np.sqrt(np.mean((test.values - predictions)**2))
 mape = np.mean(np.abs((test.values - predictions) / test.values)) * 100
@@ -221,29 +205,29 @@ print(f"MAE: {mae:.2f}")
 print(f"RMSE: {rmse:.2f}")
 print(f"MAPE: {mape:.2f}%")
 
-# Analyse des résidus
+
 residuals = best_model.resid
 
 fig, axes = plt.subplots(2, 2, figsize=(14, 8))
 
-# Résidus
+
 axes[0, 0].plot(residuals)
 axes[0, 0].axhline(y=0, color='r', linestyle='--')
 axes[0, 0].set_title('Résidus du Modèle')
 axes[0, 0].set_ylabel('Résidus')
 axes[0, 0].grid(True, alpha=0.3)
 
-# Histogramme des résidus
+
 axes[0, 1].hist(residuals, bins=30, edgecolor='black')
 axes[0, 1].set_title('Distribution des Résidus')
 axes[0, 1].set_xlabel('Résidus')
 axes[0, 1].set_ylabel('Fréquence')
 
-# ACF des résidus
+
 plot_acf(residuals, lags=30, ax=axes[1, 0])
 axes[1, 0].set_title('ACF des Résidus')
 
-# Q-Q plot
+
 from scipy import stats
 stats.probplot(residuals, dist="norm", plot=axes[1, 1])
 axes[1, 1].set_title('Q-Q Plot')
@@ -254,29 +238,28 @@ plt.show()
 
 print("\n→ Analyse des résidus sauvegardée dans 'sarima_residuals.png'")
 
-# 6. FORECASTING AND VISUALIZATION
+
 print("\n" + "="*70)
 print("6. PRÉVISIONS ET VISUALISATION")
 print("-"*70)
 
-# Prévisions futures (12 mois)
 n_forecast = 12
 future_forecast = best_model.forecast(steps=len(test) + n_forecast)
 
-# Visualisation
+
 fig, ax = plt.subplots(figsize=(14, 6))
 
-# Données d'entraînement
+
 ax.plot(train.index, train.values, label='Entraînement', color='blue', linewidth=1.5)
 
-# Données de test
+
 ax.plot(test.index, test.values, label='Test (Réel)', color='green', linewidth=1.5)
 
-# Prédictions sur test
+
 ax.plot(test.index, predictions, label='Prédictions Test', 
         color='orange', linewidth=1.5, linestyle='--')
 
-# Prévisions futures
+
 future_dates = pd.date_range(start=test.index[-1], periods=n_forecast+1, freq='MS')[1:]
 ax.plot(future_dates, future_forecast[len(test):], label='Prévisions Futures', 
         color='red', linewidth=2, linestyle='--')
@@ -298,7 +281,7 @@ print("\n→ Prévisions pour les 12 prochains mois:")
 for i, (date, value) in enumerate(zip(future_dates, future_forecast[len(test):])):
     print(f"  {date.strftime('%Y-%m')}: {value:.2f}")
 
-# CONCLUSION
+
 print("\n" + "="*70)
 print("CONCLUSION")
 print("="*70)
