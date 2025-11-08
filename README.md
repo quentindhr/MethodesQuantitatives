@@ -484,52 +484,11 @@ pip install -r requirements.txt
 
 ---
 
-## 📖 Références
-
-### Livres
-- **Time Series Analysis** - James D. Hamilton
-- **Forecasting: Principles and Practice** - Rob J Hyndman & George Athanasopoulos
-- **Pattern Recognition and Machine Learning** - Christopher M. Bishop
-
-### Bibliothèques Python
-- [statsmodels](https://www.statsmodels.org/) - SARIMA et analyse de séries temporelles
-- [hmmlearn](https://hmmlearn.readthedocs.io/) - Hidden Markov Models
-- [scikit-learn](https://scikit-learn.org/) - Machine Learning
-- [pandas](https://pandas.pydata.org/) - Manipulation de données
-
-### Articles
-- Box, G. E. P., & Jenkins, G. M. (1976). Time Series Analysis: Forecasting and Control
-- Rabiner, L. R. (1989). A Tutorial on Hidden Markov Models
-
----
-
-## 👨‍💻 Auteur
+## 👨‍💻 Auteurs
 
 **Quentin Deharo** (@quentindhr)
+**Cornel Cristea** (@scornel09)
 
 ## 📝 License
 
 Ce projet est à des fins éducatives dans le cadre du cours de Méthodes Quantitatives.
-
----
-
-## ❓ FAQ
-
-**Q: Les données sont-elles réelles ?**  
-R: dataset1.txt contient des données réelles de ventes retail US. dataset2.txt et dataset3.csv sont synthétiques mais réalistes pour l'apprentissage.
-
-**Q: Puis-je utiliser mes propres données ?**  
-R: Oui ! Respectez le format (Date, Valeur) avec tabulation ou virgule comme séparateur.
-
-**Q: Le code ne s'exécute pas**  
-R: Vérifiez que toutes les dépendances sont installées avec `pip install -r requirements.txt`
-
-**Q: Comment interpréter un MAPE de 3% ?**  
-R: Les prévisions sont en moyenne à 3% de la valeur réelle → très bonne précision.
-
-**Q: Que signifie une autocorrélation de 0.98 ?**  
-R: Très forte dépendance temporelle → le modèle simple ne capture pas toute la structure.
-
----
-
-**Dernière mise à jour** : 2025-01-08
